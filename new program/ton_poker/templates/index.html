@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Poker</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            height: 100vh;
+        }
+        .poker-table {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            background: #1B5E20;
+            border-radius: 200px;
+            height: 400px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .player-spot {
+            width: 60px;
+            height: 60px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            position: absolute;
+            border: 2px solid #FFD700;
+        }
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="poker-table">
+        <!-- Player spots will be added dynamically -->
+    </div>
+    <div class="controls">
+        <button onclick="fold()">Fold</button>
+        <button onclick="check()">Check</button>
+        <button onclick="raise()">Raise</button>
+    </div>
+    <script>
+        // Add player spots around the table
+        const table = document.querySelector('.poker-table');
+        const positions = [
+            {top: '10%', left: '50%'},
+            {top: '30%', left: '80%'},
+            {top: '70%', left: '80%'},
+            {top: '90%', left: '50%'},
+            {top: '70%', left: '20%'},
+            {top: '30%', left: '20%'}
+        ];
+
+        positions.forEach((pos, i) => {
+            const spot = document.createElement('div');
+            spot.className = 'player-spot';
+            spot.style.top = pos.top;
+            spot.style.left = pos.left;
+            spot.style.transform = 'translate(-50%, -50%)';
+            table.appendChild(spot);
+        });
+
+        // Game functions
+        function fold() {
+            window.Telegram.WebApp.sendData(JSON.stringify({action: 'fold'}));
+        }
+
+        function check() {
+            window.Telegram.WebApp.sendData(JSON.stringify({action: 'check'}));
+        }
+
+        function raise() {
+            window.Telegram.WebApp.sendData(JSON.stringify({action: 'raise'}));
+        }
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</body>
+</html> 

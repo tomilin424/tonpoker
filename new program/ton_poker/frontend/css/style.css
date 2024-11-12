@@ -1,0 +1,127 @@
+:root {
+    --bg-dark: #1E1E1E;
+    --bg-light: #2D2D2D;
+    --text-light: #FFFFFF;
+    --text-dark: #B0B0B0;
+    --accent: #0088CC;
+    --table-green: #1B4D3E;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+
+.app {
+    max-width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: var(--bg-light);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.balance {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.balance-amount {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.game-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.poker-table {
+    background-color: var(--table-green);
+    border-radius: 100px;
+    aspect-ratio: 2/1;
+    position: relative;
+    margin: 2rem auto;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.player-spot {
+    width: 80px;
+    height: 80px;
+    background-color: var(--bg-light);
+    border-radius: 50%;
+    position: absolute;
+    border: 2px solid var(--accent);
+}
+
+.community-cards {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.card-spot {
+    width: 50px;
+    height: 70px;
+    background-color: var(--bg-light);
+    border-radius: 5px;
+    border: 1px solid var(--text-dark);
+}
+
+.player-controls {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-light);
+    border-radius: 10px;
+    margin-top: auto;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--accent);
+    color: var(--text-light);
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.bet-slider {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+input[type="range"] {
+    flex: 1;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+} 

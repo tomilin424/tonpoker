@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Poker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="balance">
+                <span class="balance-label">Balance:</span>
+                <span class="balance-amount">0 TON</span>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="game-area">
+            <!-- Poker Table -->
+            <div class="poker-table">
+                <!-- Player Positions -->
+                <div class="player-positions">
+                    <div class="player-spot" data-position="1"></div>
+                    <div class="player-spot" data-position="2"></div>
+                    <div class="player-spot" data-position="3"></div>
+                    <div class="player-spot" data-position="4"></div>
+                    <div class="player-spot" data-position="5"></div>
+                    <div class="player-spot" data-position="6"></div>
+                </div>
+
+                <!-- Community Cards -->
+                <div class="community-cards">
+                    <div class="card-spot"></div>
+                    <div class="card-spot"></div>
+                    <div class="card-spot"></div>
+                    <div class="card-spot"></div>
+                    <div class="card-spot"></div>
+                </div>
+
+                <!-- Pot -->
+                <div class="pot">
+                    <div class="pot-amount">0 TON</div>
+                </div>
+            </div>
+
+            <!-- Player Controls -->
+            <div class="player-controls">
+                <button class="btn-fold">Fold</button>
+                <button class="btn-check">Check</button>
+                <button class="btn-bet">Bet</button>
+                <div class="bet-slider">
+                    <input type="range" min="0" max="100" value="0">
+                    <span class="bet-amount">0 TON</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html> 
