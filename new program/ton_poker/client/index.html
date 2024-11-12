@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TON Poker</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div class="header">
+            <div id="balance"></div>
+            <div id="game-status"></div>
+        </div>
+        
+        <div id="table">
+            <div id="pot-container">
+                <span>Pot:</span>
+                <span id="pot-amount">0</span>
+                <span>TON</span>
+            </div>
+            <div id="community-cards"></div>
+        </div>
+
+        <div id="players-container">
+            <!-- Игроки будут добавляться динамически -->
+        </div>
+
+        <div id="player-hand"></div>
+
+        <div id="player-controls" class="tg-controls">
+            <button id="join-game" class="tg-button">Join Game (1 TON)</button>
+            <div id="game-actions" style="display: none;">
+                <div class="action-row">
+                    <button id="check" class="tg-button">Check</button>
+                    <button id="call" class="tg-button">Call</button>
+                </div>
+                <div class="action-row">
+                    <div class="raise-controls">
+                        <input type="number" id="raise-amount" min="0" step="0.1" placeholder="Amount">
+                        <button id="raise" class="tg-button">Raise</button>
+                    </div>
+                    <button id="fold" class="tg-button secondary">Fold</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="src/game.js"></script>
+</body>
+</html> 

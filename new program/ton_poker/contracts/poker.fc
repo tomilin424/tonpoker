@@ -1,0 +1,235 @@
+;; Poker Smart Contract
+
+;; Storage
+;; game_id: uint64
+;; players: map<address, PlayerInfo>
+;; current_state: uint8
+;; pot: uint128
+;; deck: uint256
+;; current_player: address
+
+;; Добавляем структуру для информации об игроке
+const int max_players = 6;
+
+;; Player states
+const int player_state::waiting = 0;
+const int player_state::active = 1;
+const int player_state::folded = 2;
+const int player_state::all_in = 3;
+
+;; Game rounds
+const int round::preflop = 0;
+const int round::flop = 1;
+const int round::turn = 2;
+const int round::river = 3;
+
+;; Добавляем константы для карт
+const int RANKS = 13;  ;; 2-14 (2-A)
+const int SUITS = 4;   ;; ♠♥♦♣
+
+;; Комбинации
+const int HAND_HIGH_CARD = 0;
+const int HAND_PAIR = 1;
+const int HAND_TWO_PAIR = 2;
+const int HAND_THREE_KIND = 3;
+const int HAND_STRAIGHT = 4;
+const int HAND_FLUSH = 5;
+const int HAND_FULL_HOUSE = 6;
+const int HAND_FOUR_KIND = 7;
+const int HAND_STRAIGHT_FLUSH = 8;
+
+;; Добавляем структуру карты
+const int CARD_RANK_BITS = 4;  ;; 4 бита для ранга (2-14)
+const int CARD_SUIT_BITS = 2;  ;; 2 бита для масти (0-3)
+
+;; Функции для работы с картами
+int pack_card(int rank, int suit) inline {
+    return (rank << 2) | suit;
+}
+
+(int, int) unpack_card(int card) inline {
+    return (card >> 2, card & 3);
+}
+
+;; Функция для создания новой колоды
+cell create_deck() inline {
+    cell deck = new_dict();
+    int card_index = 0;
+    
+    ;; 52 карты
+    repeat(RANKS) {
+        int rank = rank_index + 2;  ;; 2-14
+        repeat(SUITS) {
+            int suit = suit_index;   ;; 0-3
+            int card = pack_card(rank, suit);
+            deck~dict_set(8, card_index, begin_cell().store_uint(card, 6).end_cell());
+            card_index += 1;
+        }
+    }
+    return deck;
+}
+
+;; Функция для раздачи карт
+(cell, cell) deal_cards(cell deck, int num_players) inline {
+    cell player_hands = new_dict();
+    int cards_dealt = 0;
+    
+    ;; Раздаем по 2 карты каждому игроку
+    repeat(num_players) {
+        cell hand = begin_cell();
+        repeat(2) {
+            ;; Получаем случайную карту
+            int random_index = rand(52 - cards_dealt);
+            (cell card, int success) = deck.dict_get(8, random_index);
+            throw_unless(500, success);
+            
+            ;; Добавляем карту в руку
+            hand = hand.store_uint(card.begin_parse().preload_uint(6), 6);
+            
+            ;; Удаляем карту из колоды
+            deck~dict_delete(8, random_index);
+            cards_dealt += 1;
+        }
+        player_hands~dict_set(8, player_index, hand.end_cell());
+    }
+    
+    return (deck, player_hands);
+}
+
+;; Функция для проверки комбинации
+int evaluate_hand(cell hand, cell community_cards) inline {
+    ;; Собираем все карты вместе
+    cell all_cards = begin_cell();
+    
+    ;; Добавляем карты из руки
+    slice hand_slice = hand.begin_parse();
+    repeat(2) {
+        all_cards = all_cards.store_uint(hand_slice~load_uint(6), 6);
+    }
+    
+    ;; Добавляем общие карты
+    slice comm_slice = community_cards.begin_parse();
+    repeat(5) {
+        if (~ comm_slice.slice_empty?()) {
+            all_cards = all_cards.store_uint(comm_slice~load_uint(6), 6);
+        }
+    }
+    
+    ;; TODO: Реализовать проверку комбинаций
+    ;; Пока возвращаем заглушку
+    return HAND_HIGH_CARD;
+}
+
+(int, int, int, int, cell, int) load_data() inline {
+    var ds = get_data().begin_parse();
+    return (
+        ds~load_uint(64),    ;; game_id
+        ds~load_uint(8),     ;; current_state
+        ds~load_coins(),     ;; pot
+        ds~load_uint(256),   ;; deck
+        ds~load_dict(),      ;; players
+        ds~load_uint(8)      ;; current_round
+    );
+}
+
+() save_data(int game_id, int current_state, int pot, int deck, cell players, int current_round) impure inline {
+    set_data(begin_cell()
+        .store_uint(game_id, 64)
+        .store_uint(current_state, 8)
+        .store_coins(pot)
+        .store_uint(deck, 256)
+        .store_dict(players)
+        .store_uint(current_round, 8)
+        .end_cell());
+}
+
+;; Messages
+const int op::join_game = 1;
+const int op::make_move = 2;
+const int op::fold = 3;
+const int op::check = 4;
+const int op::raise = 5;
+const int op::call = 6;
+const int op::start_game = 7;
+
+;; States
+const int state::waiting = 0;
+const int state::playing = 1;
+const int state::finished = 2;
+
+() recv_internal(int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { return (); }
+    
+    slice cs = in_msg_full.begin_parse();
+    int flags = cs~load_uint(4);
+    slice sender_address = cs~load_msg_addr();
+    
+    int op = in_msg_body~load_uint(32);
+    var (game_id, current_state, pot, deck, players, current_round) = load_data();
+
+    if (op == op::join_game) {
+        throw_if(100, current_state != state::waiting);
+        throw_if(101, dict_get_count(players) >= max_players);
+        
+        ;; Add player to the game
+        cell player_data = begin_cell()
+            .store_uint(player_state::waiting, 8)  ;; player state
+            .store_coins(msg_value)                ;; player balance
+            .store_uint(0, 256)                    ;; player cards (empty initially)
+            .end_cell();
+            
+        players~dict_set(267, sender_address, player_data);
+        
+        save_data(game_id, current_state, pot + msg_value, deck, players, current_round);
+        return ();
+    }
+
+    if (op == op::start_game) {
+        throw_if(102, current_state != state::waiting);
+        throw_if(103, dict_get_count(players) < 2);
+        
+        ;; Инициализируем игру
+        current_state = state::playing;
+        current_round = round::preflop;
+        
+        ;; Создаем новую колоду и раздаем карты
+        cell deck = create_deck();
+        cell player_hands = new_dict();
+        (deck, player_hands) = deal_cards(deck, dict_get_count(players));
+        
+        ;; Обновляем состояние игроков
+        cell new_players = new_dict();
+        int player_count = 0;
+        
+        ;; Обновляем состояние каждого игрока
+        do {
+            (slice player_addr, slice player_data, int success) = players~dict::delete_get_min(267);
+            if (success) {
+                cell hand = player_hands.dict_get(8, player_count);
+                cell new_player_data = begin_cell()
+                    .store_uint(player_state::active, 8)
+                    .store_coins(player_data~load_coins())
+                    .store_ref(hand)
+                    .end_cell();
+                    
+                new_players~dict_set(267, player_addr, new_player_data);
+                player_count += 1;
+            }
+        } until (~ success);
+        
+        save_data(game_id, current_state, pot, deck, new_players, current_round);
+        return ();
+    }
+
+    ;; Добавляем базовую проверку для всех игровых операций
+    if (op == op::make_move) || (op == op::fold) || (op == op::check) || (op == op::raise) || (op == op::call) {
+        throw_if(104, current_state != state::playing);
+        throw_if(105, ~dict_get(players, 267, sender_address).begin_parse().preload_uint(8) != player_state::active);
+        
+        ;; TODO: Implement game logic for each operation
+        
+        return ();
+    }
+
+    throw(0xffff);
+} 
